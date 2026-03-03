@@ -1,25 +1,24 @@
 # 🍳 Smart Cooking Assistant
 
+![License](https://img.shields.io/github/license/ida7410/cooking-assistant)
+![GitHub issues](https://img.shields.io/github/issues/ida7410/cooking-assistant)
+
 ML-powered recipe recommendation system with intelligent ingredient matching.
 
-## Project Structure
+## 🎯 Features
+
+- 🔍 **Recipe Matching**: TF-IDF similarity-based recipe search
+- ⏱️ **Time Prediction**: ML-powered cooking time estimation
+- 📝 **Recipe Simplification**: AI-powered beginner-friendly instructions
+- 🔄 **Ingredient Substitutions**: Smart alternatives for missing ingredients
+
+## 🏗️ Architecture
 ```
-cooking-assistant/
-├── backend/     # FastAPI + ML models
-└── frontend/    # Next.js web interface
+Frontend (Next.js)  ←→  Backend (FastAPI)  ←→  ML Models
+    Vercel                  Railway           scikit-learn
 ```
 
-## Features
-- Recipe search from ingredients
-- Cooking time prediction
-- Recipe simplification
-- Ingredient substitutions
-
-## Tech Stack
-**Backend:** Python, FastAPI, scikit-learn, Claude API
-**Frontend:** Next.js, TypeScript, Tailwind CSS
-
-## Quick Start
+## 🚀 Quick Start
 
 ### Backend
 ```bash
@@ -27,6 +26,7 @@ cd backend
 python -m venv venv
 venv\Scripts\activate
 pip install -r requirements.txt
+cp .env.example .env  # Add your API keys
 uvicorn main:app --reload
 ```
 
@@ -34,10 +34,27 @@ uvicorn main:app --reload
 ```bash
 cd frontend
 npm install
+cp .env.example .env.local  # Configure API URL
 npm run dev
 ```
 
-## Links
-- Frontend: http://localhost:3000
-- Backend: http://localhost:8000
-- API Docs: http://localhost:8000/docs
+## 📝 Environment Variables
+
+### Backend
+- `ENVIRONMENT` - development/production
+- `ANTHROPIC_API_KEY` - Claude API key
+
+### Frontend
+- `NEXT_PUBLIC_API_URL` - Backend API URL
+
+See `.env.example` files for details.
+
+## 📊 Tech Stack
+
+**Backend:** Python, FastAPI, scikit-learn, Claude API  
+**Frontend:** Next.js 14, TypeScript, Tailwind CSS  
+**Deployment:** Vercel + Railway
+
+## 📝 License
+
+MIT © 2026 Hyeonbeen (Ida) Yoon

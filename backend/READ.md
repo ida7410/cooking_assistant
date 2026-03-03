@@ -10,3 +10,7 @@ venv\Scripts\activate
 pip install -r requirements.txt
 uvicorn main:app --reload
 ```
+
+## 📝 Environment Variables
+- `ENVIRONMENT` - development/production
+- `ANTHROPIC_API_KEY` - Claude API key

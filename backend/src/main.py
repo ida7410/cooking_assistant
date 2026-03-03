@@ -1,3 +1,5 @@
+from typing import List
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -21,4 +23,34 @@ app.add_middleware(
 
 @app.get("/")
 async def root():
-    return {"message": "Cooking Assistant API", "status": "running"}
+    return {
+        "message": "Cooking Assistant API",
+        "version": "0.1.0",
+        "status": "running"
+    }
+
+
+@app.post("/recipe/search")
+async def recipe_search(ingredients: List[str]):
+    template = {
+        "recipes": [
+            {
+                "id": 1,
+                "name": "Chicken Fried Rice",
+                "match_percentage": 85,
+                "cooking_time": 25,
+                "difficulty": "Easy",
+                "missing_ingredients": ["egg", "green onion"]
+            },
+            {
+                "id": 2,
+                "name": "Garlic Soy Chicken",
+                "match_percentage": 75,
+                "cooking_time": 30,
+                "difficulty": "Easy",
+                "missing_ingredients": ["ginger"]
+            }
+        ],
+        "total_found": 2
+    }
+    return template

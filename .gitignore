@@ -1,15 +1,30 @@
 # Python (Backend)
-backend/venv/
-backend/__pycache__/
-backend/*.pyc
-backend/*.pyo
-backend/*.pyd
-backend/.Python
-backend/env/
-backend/.env
-backend/*.csv
-backend/*.pkl
-backend/*.h5
+**/__pycache__/
+**/*.pyc
+**/*.pyo
+**/*.pyd
+*.py[cod]
+*$py.class
+
+# Virtual Environment
+**/venv/
+**/env/
+**/.venv/
+
+# Environment variables
+**/.env
+!**/.env.example
+
+# Data files (Backend)
+backend/data/*.csv
+backend/data/*.json
+!backend/data/.gitkeep
+
+# Model files (Backend)
+backend/models/saved/*.pkl
+backend/models/saved/*.h5
+backend/models/saved/*.joblib
+!backend/models/saved/.gitkeep
 
 # Node (Frontend)
 frontend/node_modules/
@@ -17,6 +32,7 @@ frontend/.next/
 frontend/out/
 frontend/build/
 frontend/.env*.local
+!frontend/.env.example
 frontend/.vercel
 frontend/.turbo
 frontend/*.tsbuildinfo
@@ -33,9 +49,15 @@ frontend/next-env.d.ts
 .DS_Store
 Thumbs.db
 .directory
+Desktop.ini
 
 # Logs
 *.log
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+
+# Testing
+.pytest_cache/
+.coverage
+htmlcov/

@@ -1,6 +1,31 @@
+"use client";
+
 import Image from "next/image";
 
+import { BACKEND_API_BASE_URL } from "../constants";
+
 export default function Home() {
+  function testApi() {
+    fetch(`${BACKEND_API_BASE_URL}`, {
+      method: "GET",
+      headers: {"Content-Type": "application/json"},
+    })
+    .then(response => {
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      return response.json();
+    })
+    .then(data => {
+      console.log("Response from backend:", data);
+      alert(`Response from backend: ${JSON.stringify(data)}`);
+    })
+    .catch(error => {
+      console.error("Error calling backend API:", error);
+      alert(`Error calling backend API: ${error}`);
+    });
+  }
+
   return (
     <div className="flex min-h-screen items-center justify-center bg-zinc-50 font-sans dark:bg-black">
       <main className="flex min-h-screen w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
@@ -58,6 +83,7 @@ export default function Home() {
           >
             Documentation
           </a>
+          <button onClick={testApi} className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]">Test API</button>
         </div>
       </main>
     </div>

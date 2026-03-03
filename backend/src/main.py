@@ -3,19 +3,18 @@ from typing import List
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
+import config
+
 app = FastAPI(
-    title="Cooking Assistant API",
-    description="ML-powered recipe recommendation system",
-    version="0.1.0"
+    title=config.API_TITLE,
+    description=config.API_DESCRIPTION,
+    version=config.API_VERSION
 )
 
-# CORS middleware - allows frontend to call API
+# CORS middleware with config
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        "http://localhost:3000",  # Local development
-        "https://*.vercel.app",   # Vercel deployment
-    ],
+    allow_origins=config.CORS_ORIGINS,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -23,10 +22,12 @@ app.add_middleware(
 
 @app.get("/")
 async def root():
+    """Health check endpoint"""
     return {
-        "message": "Cooking Assistant API",
-        "version": "0.1.0",
-        "status": "running"
+        "message": config.API_TITLE,
+        "version": config.API_VERSION,
+        "status": "running",
+        "environment": config.ENVIRONMENT
     }
 
 

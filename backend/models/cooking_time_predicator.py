@@ -17,6 +17,7 @@ class CookingTimePredictor:
             'n_steps',
             'n_ingredients',
             'extracted_time',
+            'passive_time',
             'has_bake',
             'has_fry',
             'has_boil',
@@ -31,6 +32,16 @@ class CookingTimePredictor:
             'simmer': ['simmer'],
             'grill': ['grill', 'bbq'],
             'slow_cook': ['slow cooker', 'crockpot'],
+        }
+        self.passive_keywords = {
+            'overnight': 720,      # 12 hours
+            'refrigerate': 120,    # 2 hours average
+            'chill': 60,          # 1 hour average
+            'freeze': 180,        # 3 hours average
+            'marinate': 120,      # 2 hours average
+            'rest': 30,           # 30 min average
+            'cool': 30,           # 30 min average
+            'set': 60,            # 1 hour average
         }
 
         if self.model_path.exists():
@@ -51,8 +62,9 @@ class CookingTimePredictor:
         df = pd.read_csv(self.data_path)
         df_clean = df[df['minutes'] <= 180]
 
-        # extract times in steps
+        # extract features in steps
         df_clean['extracted_time'] = df_clean['steps'].apply(self._extract_time)
+        df_clean['passive_time'] = df_clean['steps'].apply(self._detect_passive)
 
         # tags for cooking methods
         for method, keywords in self.methods.items():
@@ -121,11 +133,24 @@ class CookingTimePredictor:
             'n_steps': recipe_row.get('n_steps', 0),
             'n_ingredients': recipe_row.get('n_ingredients', 0),
             'extracted_time': self._extract_time(steps_text),
+            'passive_time': self._detect_passive(steps_text)
         }
 
         for method, keywords in self.methods.items():
             features[f'has_{method}'] = int(any(kw in steps_text for kw in keywords))
         return features
+
+
+    # detect passive
+    def _detect_passive(self, steps):
+        steps_text = str(steps).lower()
+
+        total_passive = 0
+        for keyword, minutes in self.passive_keywords.items():
+            if keyword in steps_text:
+                total_passive = max(total_passive, minutes)  # Take longest
+
+        return total_passive
 
 
     # predict

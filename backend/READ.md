@@ -14,3 +14,7 @@ uvicorn main:app --reload
 ## 📝 Environment Variables
 - `ENVIRONMENT` - development/production
 - `ANTHROPIC_API_KEY` - Claude API key
+
+## Need to update
+- Doesn't work for passive & overnight
+- Detect passive waiting

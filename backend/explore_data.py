@@ -11,6 +11,8 @@ import numpy as np
 # load data
 data_path = Path(__file__).parent / "data" / "RAW_recipes.csv"
 df = pd.read_csv(data_path)
+df_clean = df[df['minutes'] <= 180]
+interactions = pd.read_csv('data/RAW_interactions.csv')
 
 def basic_info():
     # basic info
@@ -92,8 +94,6 @@ def cooking_time():
 
 
 def test_corr_cooking_time():
-    df_clean = df[df['minutes'] <= 180]
-
     # 1. check time related tags
     time_tags = df_clean['tags'].str.contains('minutes-or-less|hours-or-less', case=False, na=False)
     print(f"Recipe w/ time tags: {time_tags.sum()} ({time_tags.sum() / len(df_clean) * 100:.1f})")
@@ -150,5 +150,50 @@ def extract_time(text):
     return total
 
 
+def ratings():
+    # basic info
+    print(f"Recipes: {len(df)}")
+    print(f"Interactions: {len(interactions)}")
+    print(f"Users: {interactions['user_id'].nunique()}")
+
+    # avg rating
+    print(interactions['rating'].value_counts().sort_index())
+    avg_rating = interactions['rating'].mean()
+    print(f"Average: {avg_rating:.2f}")
+
+    # user activity
+    user_counts = interactions['user_id'].value_counts()
+    print(f"Most active user: {user_counts.max()} ratings")
+    print(f"Median active user: {user_counts.median():.0f} ratings")
+    print(f"User w 1 rating: {(user_counts == 1).sum()}")
+    print(f"user w 10+ ratings: {(user_counts >= 10).sum()}")
+
+    # recipe popularity
+    recipe_counts = interactions['recipe_id'].value_counts()
+    print(f"Most rated recipe: {recipe_counts.max()}")
+    print(f"Median rated recipe: {recipe_counts.mean()}")
+    print(f"Recipe w 1 rating: {(recipe_counts == 1).sum()}")
+    print(f"Recipe w 10+ ratings: {(recipe_counts >= 10).sum()}")
+
+    # sparsity
+    n_users = interactions['user_id'].nunique()
+    n_recipes = interactions['recipe_id'].nunique()
+    n_interactions = len(interactions)
+    possible_interactions = n_users * n_recipes
+    sparsity = 1 - (n_interactions / possible_interactions)
+    print(f"Matrix size: {n_users} users x {n_recipes} recipes")
+    print(f"Possible interactions: {possible_interactions}")
+    print(f"Actual interactions: {n_interactions}")
+    print(f"Sparsity: {sparsity}")
+
+    # recipe ratings
+    recipes_with_ratings = set(interactions['recipe_id'].unique())
+    all_recipes = set(df['id'].unique())
+    recipes_without_ratings = all_recipes - recipes_with_ratings
+    print(f"Recipes WITHOUT ratings: {len(recipes_without_ratings):,} ({len(recipes_without_ratings) / len(df) * 100:.1f}%)")
+    print(f"Recipes WITH ratings: {len(recipes_with_ratings):,} ({len(recipes_with_ratings) / len(df) * 100:.1f}%)")
+
+
 # cooking_time()
-test_corr_cooking_time()
+# test_corr_cooking_time()
+ratings()

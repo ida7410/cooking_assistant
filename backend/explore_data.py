@@ -194,6 +194,36 @@ def ratings():
     print(f"Recipes WITH ratings: {len(recipes_with_ratings):,} ({len(recipes_with_ratings) / len(df) * 100:.1f}%)")
 
 
+def explore_ratings():
+    # recipe w high ratings
+    high_ratings = interactions[interactions['rating'] >= 4]
+    print(f"High ratings: {len(high_ratings)} ({len(high_ratings) / len(interactions) * 100:.1f}%)")
+
+    # most rated recipe
+    recipe_counts = interactions['recipe_id'].value_counts()
+    popular_recipe_id = recipe_counts.index[0]
+    popular_recipe_rating = recipe_counts.iloc[0]
+    print(f"Most rated recipe {popular_recipe_id} with {popular_recipe_rating} ratings")
+
+    # users who rated this recipe high
+    users_rated = interactions[
+        (interactions['recipe_id'] == popular_recipe_id) &
+        (interactions['rating'] >= 4)
+    ]['user_id'].to_list()
+    print(f"# of Users who rated this recipe 4 or 5 stars: {len(users_rated)}")
+
+    # recipes which these users also highly rated
+    other_recipes = interactions[
+        (interactions['user_id'].isin(users_rated)) &
+        (interactions['recipe_id'] != popular_recipe_id) &
+        (interactions['rating'] >= 4)
+    ]['recipe_id'].value_counts().head(10)
+    print(f"Recipes which these users also highly rated:")
+    for rec_id, count in other_recipes.items():
+        print(f"{rec_id} : {count} users")
+
+
 # cooking_time()
 # test_corr_cooking_time()
-ratings()
+# ratings()
+explore_ratings()

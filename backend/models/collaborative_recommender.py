@@ -124,8 +124,8 @@ def main():
             print(f"# of users who liked {rec['recipe_id']}: {rec['total_users_liked_other']}")
             print(f"jaccard: {rec['jaccard']}")
             print(f"confidence: {rec['confidence']}")
-            print(f"support: {rec['support']}\n")
-            print(f"normalized score: {rec['normalized']}")
+            print(f"support: {rec['support']}")
+            print(f"normalized score: {rec['normalized']}\n")
 
 
 if __name__ == '__main__':

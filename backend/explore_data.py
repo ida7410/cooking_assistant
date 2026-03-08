@@ -223,7 +223,38 @@ def explore_ratings():
         print(f"{rec_id} : {count} users")
 
 
+def test_recommendation():
+    from models.content_recommender import ContentRecommender
+    from models.collaborative_recommender import CollaborativeRecommender
+
+    print("Initializing recommenders...")
+    content_recommender = ContentRecommender()
+    collaborative_recommender = CollaborativeRecommender()
+    print("Completed")
+
+    # test recipe
+    test_id = 2886
+    recipe_name = df[df['id'] == test_id]['name'].values[0]
+
+    print(f"Test recipe: {recipe_name} (ID: {test_id})")
+    content_result = content_recommender.find_similar(test_id, 10)
+    collaborative_result = collaborative_recommender.find_similar(test_id, 10)
+
+    print("content-based recommendation")
+    if 'error' not in content_result:
+        for i, rec in enumerate(content_result['recommendations'][:5], 1):
+            print(f"{i}. {rec['rec_recipe_id']}")
+            print(f"   Score: {rec['similarity_score']:.3f} (Ing: {rec['ingredient_similarity']:.3f}, Tag: {rec['tag_similarity']:.3f})")
+
+
+    print("collaborative recommendation")
+    if 'error' not in collaborative_result:
+        for i, rec in enumerate(collaborative_result['recommendations'][:5], 1):
+            print(f"{i}. {rec['recipe_id']}")
+            print(f"   Score: {rec['normalized']:.3f} ({rec['common_users']} common users)")
+
 # cooking_time()
 # test_corr_cooking_time()
 # ratings()
-explore_ratings()
+# explore_ratings()
+test_recommendation()

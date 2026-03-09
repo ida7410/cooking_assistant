@@ -2,16 +2,20 @@ import pandas as pd
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
 
+from models.schemas.recipe import Recipe
+from models.schemas.recipe_recommendation import RecipeRecommendation
+from models.schemas.recommendation_response import RecommendationResponse
+
 
 class RecipeMatcher:
     def __init__(self, data_path='data/RAW_recipes.csv'):
         # load recipes
-        self.df = pd.read_csv(data_path)
+        self.recipes = pd.read_csv(data_path)
 
         # create ingredient vectors
         self.vectorizer = TfidfVectorizer()
         self.recipe_vectors = self.vectorizer.fit_transform(
-            self.df['ingredients'].astype(str)
+            self.recipes['ingredients'].astype(str)
         )
 
     def find_matches(self, user_ingredients, top_n=5):
@@ -25,20 +29,25 @@ class RecipeMatcher:
         # get top matches
         top_indices = similarities.argsort()[-top_n:][::-1]
 
-        results = []
+        recommendations = []
         for i in top_indices:
-            recipe = {
-                'id': int(self.df.iloc[i]['id']),  # use 'id' from dataset
-                'name': self.df.iloc[i]['name'],
-                'match_percentage': int(similarities[i] * 100),
-                'ingredients': eval(self.df.iloc[i]['ingredients']),  # convert string to list
-                'cooking_time': int(self.df.iloc[i]['minutes']),  # 'minutes'
-                'difficulty': self._estimate_difficulty(self.df.iloc[i]),  # ← Add difficulty
-                'missing_ingredients': []  # ← Add this (calculate later if needed)
-            }
-            results.append(recipe)
+            recipe_row = self.recipes.iloc[i]
+            recipe = Recipe.get_recipe_dataframe_from_row(recipe_row)
+            rec = RecipeRecommendation(
+                recipe=recipe,
+                similarity_score=similarities[i]
+            )
+            recommendations.append(rec)
 
-        return results
+        response = RecommendationResponse(
+            target=user_ingredients,
+            status='success',
+            top_n=top_n,
+            strategy='matcher',
+            recommendations=recommendations
+        )
+
+        return response
 
     def _estimate_difficulty(self, recipe_row):
         """Estimate difficulty based on steps and ingredients"""

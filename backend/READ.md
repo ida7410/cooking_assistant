@@ -16,10 +16,11 @@ uvicorn main:app --reload
 - `ANTHROPIC_API_KEY` - Claude API key
 
 ## Plan
-- Hybrid Scoring for Content Recommendation
+- Content Recommendation
   - 65% Ingredients (what's in the recipe)
   - 30% Tags (cuisine, meal type, dietary info)
   - 5% Time proximity (how close cooking times are)
-- Interaction based Recommendation
+- Collaborative Recommendation
   - Overlapping user in high rating
   - Matrix Factorization
+- Hybrid = Content(50%) + Collab(50%)

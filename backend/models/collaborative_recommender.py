@@ -95,7 +95,7 @@ class CollaborativeRecommender:
             })
 
         result = {
-            "target_ recipe_id": target_recipe_id,
+            "target_recipe_id": target_recipe_id,
             "total_users_liked_target": int(len(users_liked_target)),
             "recommendations": recommendations
         }

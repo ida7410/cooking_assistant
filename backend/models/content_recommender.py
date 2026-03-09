@@ -123,7 +123,7 @@ class ContentRecommender:
         for idx in top_indices:
             rec_recipe = self.df.iloc[idx]
             recommendations.append({
-                'rec_recipe_id': int(rec_recipe['id']),
+                'recipe_id': int(rec_recipe['id']),
                 'similarity_score': float(final_scores[idx]),
                 'ingredient_similarity': float(ingredient_sim[idx]),
                 'tag_similarity': float(tag_sim[idx]),
@@ -167,7 +167,7 @@ def main():
         print(f"✅ Found {len(results['recommendations'])} recommendations:\n")
 
         for i, rec in enumerate(results['recommendations'], 1):
-            rec_recipe = df[df['id'] == rec['rec_recipe_id']].iloc[0]
+            rec_recipe = df[df['id'] == rec['recipe_id']].iloc[0]
             print(f"{i}. {rec_recipe['name']}")
             print(f"   Overall Score: {rec['similarity_score']:.3f}")
             print(f"   - Ingredients: {rec['ingredient_similarity']:.3f} (65% weight)")

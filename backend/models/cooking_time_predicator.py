@@ -182,26 +182,3 @@ class CookingTimePredictor:
             'skill_level': skill_level,
             'extracted_time': features['extracted_time'],  # For debugging
         }
-
-
-
-def main():
-    predictor = CookingTimePredictor()
-
-    df = pd.read_csv('data/RAW_recipes.csv')
-    sample_recipes = df.sample(5)
-    for idx, recipe in sample_recipes.iterrows():
-        print(f"Recipe: {recipe['name']}")
-        print(f"  Actual time: {recipe['minutes']} min")
-        print(f"  Steps: {recipe['n_steps']}, Ingredients: {recipe['n_ingredients']}")
-
-        # Predict for different skill levels
-        for skill in ['beginner', 'intermediate', 'expert']:
-            prediction = predictor.predict(recipe, skill_level=skill)
-            print(f"  {skill:12}: {prediction['adjusted_time']:3} min")
-
-        print()
-
-
-if __name__ == '__main__':
-    main()

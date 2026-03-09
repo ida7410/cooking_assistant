@@ -1,6 +1,4 @@
 import ast
-import os
-from typing import final
 
 import pandas as pd
 import numpy as np
@@ -74,13 +72,13 @@ class ContentRecommender:
             return 1 - (time_diff / 50)
 
 
-    def find_similar(self, recipe_id, top_n=10):
+    def find_similar(self, target_recipe_id, top_n=10):
         # find recipe index
         try:
-            recipe_idx = self.df[self.df['id'] == recipe_id].index[0]
+            recipe_idx = self.df[self.df['id'] == target_recipe_id].index[0]
         except IndexError as e:
             return {
-                "error": f"Recipe {recipe_id} not found",
+                "error": f"Recipe {target_recipe_id} not found",
                 "recommendation": []
             }
 
@@ -131,50 +129,10 @@ class ContentRecommender:
             })
 
         result = {
-            'recipe_id': recipe_id,
+            'target_recipe_id': target_recipe_id,
+            'top_n': top_n,
+            'strategy': 'content',
             'recommendations': recommendations
         }
 
         return result
-
-
-
-def main():
-    recommender = ContentRecommender()
-    df = pd.read_csv('data/RAW_recipes.csv')
-
-    # Find a "Chicken Fried Rice" recipe
-    test_recipes = df[df['name'].str.contains('fried rice', case=False, na=False)].head(3)
-
-    print("Test recipes:")
-    for idx, row in test_recipes.iterrows():
-        print(f"  {row['id']}: {row['name']} ({row['minutes']} min)")
-
-    print("\n" + "=" * 60)
-
-    # Test recommendation for first fried rice recipe
-    test_recipe_id = test_recipes.iloc[0]['id']
-    test_recipe_name = test_recipes.iloc[0]['name']
-
-    print(f"\nFinding similar recipes to: {test_recipe_name}")
-    print(f"Recipe ID: {test_recipe_id}\n")
-
-    results = recommender.find_similar(test_recipe_id, top_n=10)
-
-    if 'error' in results:
-        print(f"Error: {results['error']}")
-    else:
-        print(f"✅ Found {len(results['recommendations'])} recommendations:\n")
-
-        for i, rec in enumerate(results['recommendations'], 1):
-            rec_recipe = df[df['id'] == rec['recipe_id']].iloc[0]
-            print(f"{i}. {rec_recipe['name']}")
-            print(f"   Overall Score: {rec['similarity_score']:.3f}")
-            print(f"   - Ingredients: {rec['ingredient_similarity']:.3f} (65% weight)")
-            print(f"   - Tags: {rec['tag_similarity']:.3f} (30% weight)")
-            print(f"   - Time: {rec['time_similarity']:.3f} (5% weight)")
-            print(f"   Cooking Time: {rec_recipe['minutes']} min")
-
-
-if __name__ == '__main__':
-    main()

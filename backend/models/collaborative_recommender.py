@@ -1,9 +1,6 @@
 import pandas as pd
-import numpy as np
 from pathlib import Path
 from collections import defaultdict
-
-from typing_inspection.typing_objects import target
 
 
 class CollaborativeRecommender:
@@ -96,37 +93,10 @@ class CollaborativeRecommender:
 
         result = {
             "target_recipe_id": target_recipe_id,
+            'top_n': top_n,
+            'strategy': 'collaborative',
             "total_users_liked_target": int(len(users_liked_target)),
             "recommendations": recommendations
         }
 
         return result
-
-
-def main():
-    recipes = pd.read_csv('data/RAW_recipes.csv')
-    recommender = CollaborativeRecommender()
-    target_recipe_id = 2886
-
-    recipe_name = recipes[recipes['id'] == target_recipe_id]['name'].values[0]
-    print(f"Find 10 similar recipe for {recipe_name} id: {target_recipe_id}")
-
-    result = recommender.find_similar(target_recipe_id, top_n=10)
-    print(f"liked by {result['total_users_liked_target']}")
-
-    if 'error' in result:
-        print(f"Error: {result['error']}")
-    else:
-        print(f"Found {len(result['recommendations'])} recipes")
-        for rec in result['recommendations']:
-            print(f"Recipe ID: {rec['recipe_id']}")
-            print(f"# of common users who liked: {rec['common_users']}")
-            print(f"# of users who liked {rec['recipe_id']}: {rec['total_users_liked_other']}")
-            print(f"jaccard: {rec['jaccard']}")
-            print(f"confidence: {rec['confidence']}")
-            print(f"support: {rec['support']}")
-            print(f"normalized score: {rec['normalized']}\n")
-
-
-if __name__ == '__main__':
-    main()

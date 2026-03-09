@@ -1,17 +1,14 @@
-import pandas as pd
 import numpy as np
-from content_recommender import ContentRecommender
-from collaborative_recommender import CollaborativeRecommender
 
 class HybridRecommender:
-    def __init__(self, min_rating=4, min_common_users=3):
+    def __init__(self, content_recommender, collab_recommender, min_rating=4, min_common_users=3):
         self.min_rating = min_rating
         self.min_common_users = min_common_users
-        self.content_recommender = ContentRecommender()
-        self.collab_recommender = CollaborativeRecommender()
+        self.content_recommender = content_recommender
+        self.collab_recommender = collab_recommender
 
 
-    def _normalize(self, scores):
+    def _normalize_scores(self, scores):
         values = list(scores.values())
         min_score = np.min(values)
         max_score = np.max(values)
@@ -40,21 +37,21 @@ class HybridRecommender:
             for rec in collab_rec['recommendations']
         }
 
-        content_norm = self._normalize(content_scores)
-        collab_norm = self._normalize(collab_scores)
+        content_norm = self._normalize_scores(content_scores)
+        collab_norm = self._normalize_scores(collab_scores)
 
         all_recipes = set(content_norm.keys()) | set(collab_norm.keys())
 
         hybrid_scores = {}
         for recipe_id in all_recipes:
-            content_score = content_scores.get(recipe_id, 0)
-            collab_score = collab_scores.get(recipe_id, 0)
+            content_score = content_norm.get(recipe_id, 0)
+            collab_score = collab_norm.get(recipe_id, 0)
 
             hybrid_score = 0.5 * content_score + 0.5 * collab_score
             hybrid_scores[recipe_id] = {
                 'hybrid_score': hybrid_score,
-                'content_score': content_score,
-                'collab_score': collab_score,
+                'normalized_content_score': content_score,
+                'normalized_collab_score': collab_score,
                 'in_both': (recipe_id in collab_norm) and (recipe_id in content_norm)
             }
 
@@ -69,8 +66,8 @@ class HybridRecommender:
             recommendations.append({
                 'recipe_id': recipe_id,
                 'hybrid_score': score['hybrid_score'],
-                'content_score': score['content_score'],
-                'collab_score': score['collab_score'],
+                'content_score': score['normalized_content_score'],
+                'collab_score': score['normalized_collab_score'],
                 'in_both': score['in_both']
             })
 
@@ -81,26 +78,3 @@ class HybridRecommender:
             'recommendations': recommendations
         }
         return result
-
-
-def main():
-    recommender = HybridRecommender()
-    test_id = 2886
-    result = recommender.find_similar(test_id, 10)
-    recipes_df = pd.read_csv('data/RAW_recipes.csv')
-
-    for i, rec in enumerate(result['recommendations'], 1):
-        rec_name = recipes_df[recipes_df['id'] == rec['recipe_id']]['name'].values[0]
-
-        print(f"{i}. {rec_name}")
-        print(f"   Hybrid Score: {rec['hybrid_score']:.3f}")
-        print(f"   └─ Content: {rec['content_score']:.3f} | Collaborative: {rec['collab_score']:.3f}")
-
-        if rec['in_both']:
-            print(f"   ⭐ In BOTH lists (strong signal!)")
-
-        print()
-
-
-if __name__ == '__main__':
-    main()

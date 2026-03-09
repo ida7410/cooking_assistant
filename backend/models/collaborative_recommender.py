@@ -1,32 +1,24 @@
-import pandas as pd
-import numpy as np
-from pathlib import Path
 from collections import defaultdict
 
-from typing_inspection.typing_objects import target
+from models.schemas.recipe import Recipe
+from models.schemas.recipe_recommendation import RecipeRecommendation
+from models.schemas.recommendation_response import RecommendationResponse
 
 
 class CollaborativeRecommender:
-    def __init__(self, data_path='data/RAW_interactions.csv', min_rating=4, min_common_users=3):
-        self.data_path = Path(data_path)
+    def __init__(self, recipes, interactions, min_rating=4, min_common_users=3):
         self.min_rating = min_rating
         self.min_common_users = min_common_users
 
-        self.df = None
+        self.recipes = recipes
+        self.interactions = interactions
         self.recipe_user = {} # recipe_id : set of user id
 
-        self._load_data()
         self._build_user_map()
 
 
-    def _load_data(self):
-        print("Loading data...")
-        self.df = pd.read_csv(self.data_path)
-        print(f"Loaded {len(self.df)} rows")
-
-
     def _build_user_map(self):
-        for _, row in self.df.iterrows():
+        for _, row in self.interactions.iterrows():
             recipe_id = row['recipe_id']
             user_id = row['user_id']
 
@@ -38,20 +30,31 @@ class CollaborativeRecommender:
         print(f"Built a map of {len(self.recipe_user):,} recipes")
 
 
-    def find_similar(self, target_recipe_id, top_n=10):
+    def find_similar(self, target_recipe:Recipe, top_n=10):
+        target_recipe_id = target_recipe.id
         if target_recipe_id not in self.recipe_user:
-            return {
-                "error": f"{target_recipe_id} is not found",
-                "recommendations": []
-            }
+            response = RecommendationResponse(
+                target=target_recipe,
+                status='error',
+                top_n=top_n,
+                strategy='collaborative',
+                recommendations=[],
+                error_message=f"{target_recipe['name']} is not found in the recipe_user"
+            )
+            return response
 
         # get users who liked it
         users_liked_target = self.recipe_user[target_recipe_id]
         if len(users_liked_target) < self.min_common_users:
-            return {
-                "error": f"Recipe {target_recipe_id} has too few ratings ({len(users_liked_target)})",
-                "recommendations": []
-            }
+            response = RecommendationResponse(
+                target=target_recipe,
+                status='error',
+                top_n=top_n,
+                strategy='collaborative',
+                recommendations=[],
+                error_message=f"{target_recipe['name']} has too few ratings ({len(users_liked_target)})"
+            )
+            return response
 
         # find co-occurrence
         co_occurrence = defaultdict()
@@ -84,49 +87,24 @@ class CollaborativeRecommender:
             max_possible_common = min(len(users_liked_target), len(other_users))
             normalized_score = count / max_possible_common if max_possible_common > 0 else 0
 
-            recommendations.append({
-                "recipe_id": int(other_recipe_id),
-                "common_users": count,
-                "total_users_liked_other": int(len(self.recipe_user[other_recipe_id])),
-                "jaccard": jaccard,
-                "support": support,
-                "confidence": confidence,
-                "normalized": normalized_score
-            })
+            recipe_row = self.recipes[self.recipes['id'] == other_recipe_id].iloc[0]
+            recipe = Recipe.get_recipe_dataframe_from_row(recipe_row)
+            rec = RecipeRecommendation(
+                recipe=recipe,
+                similarity_score=normalized_score,
+                common_users=count,
+                jaccard=jaccard,
+                support=support,
+                confidence=confidence
+            )
+            recommendations.append(rec)
 
-        result = {
-            "target_recipe_id": target_recipe_id,
-            "total_users_liked_target": int(len(users_liked_target)),
-            "recommendations": recommendations
-        }
+        response = RecommendationResponse(
+            target=target_recipe,
+            status='success',
+            top_n=top_n,
+            strategy='collaborative',
+            recommendations=recommendations
+        )
 
-        return result
-
-
-def main():
-    recipes = pd.read_csv('data/RAW_recipes.csv')
-    recommender = CollaborativeRecommender()
-    target_recipe_id = 2886
-
-    recipe_name = recipes[recipes['id'] == target_recipe_id]['name'].values[0]
-    print(f"Find 10 similar recipe for {recipe_name} id: {target_recipe_id}")
-
-    result = recommender.find_similar(target_recipe_id, top_n=10)
-    print(f"liked by {result['total_users_liked_target']}")
-
-    if 'error' in result:
-        print(f"Error: {result['error']}")
-    else:
-        print(f"Found {len(result['recommendations'])} recipes")
-        for rec in result['recommendations']:
-            print(f"Recipe ID: {rec['recipe_id']}")
-            print(f"# of common users who liked: {rec['common_users']}")
-            print(f"# of users who liked {rec['recipe_id']}: {rec['total_users_liked_other']}")
-            print(f"jaccard: {rec['jaccard']}")
-            print(f"confidence: {rec['confidence']}")
-            print(f"support: {rec['support']}")
-            print(f"normalized score: {rec['normalized']}\n")
-
-
-if __name__ == '__main__':
-    main()
+        return response

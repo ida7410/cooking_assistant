@@ -1,18 +1,27 @@
-import pandas as pd
 import numpy as np
-from content_recommender import ContentRecommender
-from collaborative_recommender import CollaborativeRecommender
+
+from models.schemas.recipe import Recipe
+from models.schemas.recipe_recommendation import RecipeRecommendation
+from models.schemas.recommendation_response import RecommendationResponse
+
 
 class HybridRecommender:
-    def __init__(self, min_rating=4, min_common_users=3):
+    def __init__(self, content_recommender, collab_recommender, min_rating=4, min_common_users=3):
         self.min_rating = min_rating
         self.min_common_users = min_common_users
-        self.content_recommender = ContentRecommender()
-        self.collab_recommender = CollaborativeRecommender()
+        self.content_recommender = content_recommender
+        self.collab_recommender = collab_recommender
+        self.recipes = content_recommender.recipes
 
 
-    def _normalize(self, scores):
+    def _normalize_scores(self, scores):
+        if not scores:
+            return {}
+
         values = list(scores.values())
+        if len(values) == 0:
+            return {}
+
         min_score = np.min(values)
         max_score = np.max(values)
 
@@ -27,34 +36,34 @@ class HybridRecommender:
         return normalized
 
 
-    def find_similar(self, recipe_id, top_n):
-        content_rec = self.content_recommender.find_similar(recipe_id, 50)
-        collab_rec = self.collab_recommender.find_similar(recipe_id, 50)
+    def find_similar(self, target_recipe:Recipe, top_n=10):
+        content_rec = self.content_recommender.find_similar(target_recipe, 50)
+        collab_rec = self.collab_recommender.find_similar(target_recipe, 50)
 
-        content_scores = {} if 'error' in content_rec else {
-            rec['recipe_id']: rec['similarity_score']
-            for rec in content_rec['recommendations']
+        content_scores = {} if content_rec.status == 'error' else {
+            rec.recipe.id: rec.similarity_score
+            for rec in content_rec.recommendations
         }
-        collab_scores = {} if 'error' in collab_rec else {
-            rec['recipe_id']: rec['normalized']
-            for rec in collab_rec['recommendations']
+        collab_scores = {} if collab_rec.status == 'error'  else {
+            rec.recipe.id: rec.similarity_score
+            for rec in collab_rec.recommendations
         }
 
-        content_norm = self._normalize(content_scores)
-        collab_norm = self._normalize(collab_scores)
+        content_norm = self._normalize_scores(content_scores)
+        collab_norm = self._normalize_scores(collab_scores)
 
         all_recipes = set(content_norm.keys()) | set(collab_norm.keys())
 
         hybrid_scores = {}
         for recipe_id in all_recipes:
-            content_score = content_scores.get(recipe_id, 0)
-            collab_score = collab_scores.get(recipe_id, 0)
+            content_score = content_norm.get(recipe_id, 0)
+            collab_score = collab_norm.get(recipe_id, 0)
 
             hybrid_score = 0.5 * content_score + 0.5 * collab_score
             hybrid_scores[recipe_id] = {
                 'hybrid_score': hybrid_score,
-                'content_score': content_score,
-                'collab_score': collab_score,
+                'normalized_content_score': content_score,
+                'normalized_collab_score': collab_score,
                 'in_both': (recipe_id in collab_norm) and (recipe_id in content_norm)
             }
 
@@ -66,41 +75,22 @@ class HybridRecommender:
 
         recommendations = []
         for recipe_id, score in sorted_recipes:
-            recommendations.append({
-                'recipe_id': recipe_id,
-                'hybrid_score': score['hybrid_score'],
-                'content_score': score['content_score'],
-                'collab_score': score['collab_score'],
-                'in_both': score['in_both']
-            })
+            recipe_row = self.recipes[self.recipes['id'] == recipe_id].iloc[0]
+            recipe = Recipe.get_recipe_dataframe_from_row(recipe_row)
+            rec = RecipeRecommendation(
+                recipe=recipe,
+                similarity_score=score['hybrid_score'],
+                content_score=score['normalized_content_score'],
+                collab_score=score['normalized_collab_score'],
+                in_both=score['in_both']
+            )
+            recommendations.append(rec)
 
-        result = {
-            'target_recipe_id': recipe_id,
-            'top_n': top_n,
-            'strategy': 'hybrid',
-            'recommendations': recommendations
-        }
-        return result
-
-
-def main():
-    recommender = HybridRecommender()
-    test_id = 2886
-    result = recommender.find_similar(test_id, 10)
-    recipes_df = pd.read_csv('data/RAW_recipes.csv')
-
-    for i, rec in enumerate(result['recommendations'], 1):
-        rec_name = recipes_df[recipes_df['id'] == rec['recipe_id']]['name'].values[0]
-
-        print(f"{i}. {rec_name}")
-        print(f"   Hybrid Score: {rec['hybrid_score']:.3f}")
-        print(f"   └─ Content: {rec['content_score']:.3f} | Collaborative: {rec['collab_score']:.3f}")
-
-        if rec['in_both']:
-            print(f"   ⭐ In BOTH lists (strong signal!)")
-
-        print()
-
-
-if __name__ == '__main__':
-    main()
+        response = RecommendationResponse(
+            target=target_recipe,
+            status='success',
+            top_n=top_n,
+            strategy='hybrid',
+            recommendations=recommendations
+        )
+        return response

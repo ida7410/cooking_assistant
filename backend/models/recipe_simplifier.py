@@ -63,22 +63,3 @@ Now write the simplified beginner-friendly version. Use numbered steps:"""
         except Exception as e:
             print(f"Exception while simplifying recipe: {e}")
             print(steps_text)
-
-
-def main():
-    simplifier = RecipeSimplifier()
-    import pandas as pd
-    df = pd.read_csv('data/RAW_recipes.csv')
-
-    # Find a recipe with interesting steps
-    recipe = df[df['name'].str.contains('fried rice', case=False, na=False)].iloc[0]
-
-    print(recipe['steps'])
-    simplified = simplifier.simplify(
-        recipe_name=recipe['name'],
-        steps=recipe['steps']
-    )
-    print(simplified)
-
-if __name__ == "__main__":
-    main()

@@ -1,5 +1,6 @@
 from datetime import datetime
-from fastapi import FastAPI
+
+from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 
 import config
@@ -7,6 +8,7 @@ from models.cooking_time_predictor import CookingTimePredictor
 from models.recipe_matcher import RecipeMatcher
 from models.recipe_simplifier import RecipeSimplifier
 from models.recommender_manager import get_recommender_manager
+from schemas import Recipe
 
 app = FastAPI(
     title=config.API_TITLE,
@@ -73,3 +75,38 @@ async def health():
             "hybrid_recommender": "ready"
         }
     }
+
+
+@app.get("/api/recipes/{recipe_id}")
+async def get_recipe(recipe_id: int):
+    try:
+        recipe_df = recommender_manager.recipes
+        recipe_row = recipe_df[recipe_df['id'] == recipe_id].iloc[0]
+        if recipe_row.empty:
+            raise HTTPException(status_code=404, detail=f"Recipe (id: {recipe_id}) is not found.")
+
+        recipe = Recipe.get_recipe_dataframe_from_row(recipe_row)
+        predicted_times = {}
+        for skill in ['beginner', 'intermediate', 'expert']:
+            prediction = time_predictor.predict(
+                recipe_row={
+                    'n_steps': recipe.n_steps,
+                    'n_ingredients': recipe.n_ingredients,
+                    'steps': ' '.join(recipe.steps)
+                },
+                skill_level=skill
+            )
+            predicted_times[skill] = prediction['adjusted_time']
+
+        return {
+            "recipe": recipe,
+            "predicted_time": {
+                "base_time": recipe.cooking_time,
+                **predicted_times
+            }
+        }
+
+    except HTTPException as e:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))

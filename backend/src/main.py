@@ -8,7 +8,7 @@ from models.cooking_time_predictor import CookingTimePredictor
 from models.recipe_matcher import RecipeMatcher
 from models.recipe_simplifier import RecipeSimplifier
 from models.recommender_manager import get_recommender_manager
-from schemas import Recipe
+from schemas import Recipe, RecipeSearchRequest
 
 app = FastAPI(
     title=config.API_TITLE,
@@ -108,5 +108,47 @@ async def get_recipe(recipe_id: int):
 
     except HTTPException as e:
         raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.post("/api/recipe/search")
+async def search_recipes(request: RecipeSearchRequest):
+    try:
+        results = recipe_matcher.find_matches(
+            user_ingredients=request.ingredients,
+            top_n=request.top_n
+        )
+
+        enhanced_recommendations = []
+        for rec in results.recommendations:
+            # predict cooking time
+            time_prediction = time_predictor.predict(
+                recipe_row={
+                    'n_steps': rec.recipe.n_steps,
+                    'n_ingredients': rec.recipe.n_ingredients,
+                    'steps': ' '.join(rec.recipe.steps)
+                },
+                skill_level=request.skill_level
+            )
+
+            simplified = None
+            if request.simplify_steps:
+                simplified = recipe_simplifier.simplify(
+                    recipe_name=rec.recipe.recipe_name,
+                    steps=rec.recipe.steps
+                )
+
+            enhanced_rec = {
+                "recipe": rec.recipe,
+                "similarity_score": rec.similarity_score,
+                "predicted_time": time_prediction['adjusted_time'],
+                "time_breakdown": time_prediction,
+                "simplified_steps": simplified
+            }
+            enhanced_recommendations.append(enhanced_rec)
+
+        return enhanced_recommendations
+
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))

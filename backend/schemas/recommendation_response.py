@@ -2,8 +2,8 @@ from typing import List, Optional
 
 from pydantic import BaseModel
 
-from models.schemas.recipe import Recipe
-from models.schemas.recipe_recommendation import RecipeRecommendation
+from schemas.recipe import Recipe
+from schemas.recipe_recommendation import RecipeRecommendation
 
 
 class RecommendationResponse(BaseModel):

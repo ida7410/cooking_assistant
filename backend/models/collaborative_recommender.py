@@ -1,8 +1,8 @@
 from collections import defaultdict
 
-from models.schemas.recipe import Recipe
-from models.schemas.recipe_recommendation import RecipeRecommendation
-from models.schemas.recommendation_response import RecommendationResponse
+from schemas.recipe import Recipe
+from schemas.recipe_recommendation import RecipeRecommendation
+from schemas.recommendation_response import RecommendationResponse
 
 
 class CollaborativeRecommender:

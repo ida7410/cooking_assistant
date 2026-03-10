@@ -2,9 +2,9 @@ import pandas as pd
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
 
-from models.schemas.recipe import Recipe
-from models.schemas.recipe_recommendation import RecipeRecommendation
-from models.schemas.recommendation_response import RecommendationResponse
+from schemas.recipe import Recipe
+from schemas.recipe_recommendation import RecipeRecommendation
+from schemas.recommendation_response import RecommendationResponse
 
 
 class RecipeMatcher:

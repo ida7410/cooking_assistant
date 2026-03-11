@@ -52,16 +52,17 @@ async def root():
         "version": "1.0.0",
         "status": "running",
         "endpoints": {
-            "health": "/api/health",
-            "search": "POST /api/recipes/search",
-            "recipe_detail": "GET /api/recipes/{id}",
-            "recommendations": "GET /api/recipes/{id}/recommendations",
-            "simplify": "POST /api/recipes/{id}/simplify"
+            "docs": "/docs",
+            "health": "/health",
+            "recipe_detail": "GET /api/recipe/{id}",
+            "search": "POST /api/recipe/search",
+            "simplify": "POST /api/recipe/simplify",
+            "recommendations": "POST /api/recipe/recommend"
         }
     }
 
 
-@app.get("/api/health")
+@app.get("/health")
 async def health():
     return {
         "status": "healthy",

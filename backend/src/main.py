@@ -9,6 +9,7 @@ from models.recipe_matcher import RecipeMatcher
 from models.recipe_simplifier import RecipeSimplifier
 from models.recommender_manager import get_recommender_manager
 from schemas import Recipe, RecipeSearchRequest, SimplifyRequest
+from schemas.recommendation_request import RecommendationRequest
 
 app = FastAPI(
     title=config.API_TITLE,
@@ -177,6 +178,24 @@ async def simplify_recipe(request: SimplifyRequest):
             "simplified_steps": simplified_steps,
             "skill_level": request.skill_level
         }
+    except HTTPException as e:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.post('/api/recipe/recommend')
+async def get_recommendation(request: RecommendationRequest):
+    try:
+        recipe_id = request.recipe_id
+        recipe_df = recommender_manager.recipes
+        recipe_row = recipe_df[recipe_df['id'] == recipe_id].iloc[0]
+        if recipe_row.empty:
+            raise HTTPException(status_code=404, detail=f"Recipe (id: {recipe_id}) is not found.")
+
+        recipe = Recipe.get_recipe_dataframe_from_row(recipe_row)
+        recommendation = recommender_manager.recommend(recipe, request.top_n, request.strategy)
+        return recommendation
     except HTTPException as e:
         raise
     except Exception as e:

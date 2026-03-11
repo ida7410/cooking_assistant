@@ -112,7 +112,6 @@ class ContentRecommender:
                 + self.TAG_WEIGHTS * tag_sim
                 + self.TIME_WEIGHTS * time_sim
         )
-        print(final_scores.shape)
 
         # get top N
         final_scores[target_recipe_idx] = -1

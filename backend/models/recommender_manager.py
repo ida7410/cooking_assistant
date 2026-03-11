@@ -61,11 +61,12 @@ class RecommenderManager:
     def recommend(self, recipe:Recipe, top_n: int, strategy: str):
         if strategy == 'content':
             return self.get_content_recommender().find_similar(recipe, top_n)
-        if strategy == 'collaborative':
+        elif strategy == 'collaborative':
             return self.get_collab_recommender().find_similar(recipe, top_n)
-        if strategy == 'hybrid':
+        elif strategy == 'hybrid':
             return self.get_hybrid_recommender().find_similar(recipe, top_n)
-        return "Strategy Not Found"
+        else:
+            raise ValueError(f"Unknown strategy: {strategy}. Must be 'content', 'collaborative', or 'hybrid'")
 
 
 _manager = RecommenderManager()

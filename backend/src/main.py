@@ -27,10 +27,10 @@ app.add_middleware(
 )
 
 # load model on startup
-recommender_manager = get_recommender_manager()
-recipe_matcher = RecipeMatcher()
-time_predictor = CookingTimePredictor()
-recipe_simplifier = RecipeSimplifier()
+recommender_manager = None
+recipe_matcher = None
+time_predictor = None
+recipe_simplifier = None
 @app.on_event("startup")
 async def startup():
     global recommender_manager, recipe_matcher, time_predictor, recipe_simplifier
@@ -79,15 +79,15 @@ async def health():
     }
 
 
-@app.get("/api/recipes/{recipe_id}")
+@app.get("/api/recipe/{recipe_id}")
 async def get_recipe(recipe_id: int):
     try:
         recipe_df = recommender_manager.recipes
-        recipe_row = recipe_df[recipe_df['id'] == recipe_id].iloc[0]
+        recipe_row = recipe_df[recipe_df['id'] == recipe_id]
         if recipe_row.empty:
             raise HTTPException(status_code=404, detail=f"Recipe (id: {recipe_id}) is not found.")
 
-        recipe = Recipe.get_recipe_dataframe_from_row(recipe_row)
+        recipe = Recipe.get_recipe_dataframe_from_row(recipe_row.iloc[0])
         predicted_times = {}
         for skill in ['beginner', 'intermediate', 'expert']:
             prediction = time_predictor.predict(
@@ -137,7 +137,7 @@ async def search_recipes(request: RecipeSearchRequest):
             simplified = None
             if request.simplify_steps:
                 simplified = recipe_simplifier.simplify(
-                    recipe_name=rec.recipe.recipe_name,
+                    recipe_name=rec.recipe.name,
                     steps=rec.recipe.steps
                 )
 
@@ -161,11 +161,11 @@ async def simplify_recipe(request: SimplifyRequest):
     try:
         recipe_id = request.recipe_id
         recipe_df = recommender_manager.recipes
-        recipe_row = recipe_df[recipe_df['id'] == recipe_id].iloc[0]
+        recipe_row = recipe_df[recipe_df['id'] == recipe_id]
         if recipe_row.empty:
             raise HTTPException(status_code=404, detail=f"Recipe (id: {recipe_id}) is not found.")
 
-        recipe = Recipe.get_recipe_dataframe_from_row(recipe_row)
+        recipe = Recipe.get_recipe_dataframe_from_row(recipe_row.iloc[0])
         simplified_steps = recipe_simplifier.simplify(
             recipe_name=recipe.name,
             steps=recipe.steps,
@@ -190,11 +190,11 @@ async def get_recommendation(request: RecommendationRequest):
     try:
         recipe_id = request.recipe_id
         recipe_df = recommender_manager.recipes
-        recipe_row = recipe_df[recipe_df['id'] == recipe_id].iloc[0]
+        recipe_row = recipe_df[recipe_df['id'] == recipe_id]
         if recipe_row.empty:
             raise HTTPException(status_code=404, detail=f"Recipe (id: {recipe_id}) is not found.")
 
-        recipe = Recipe.get_recipe_dataframe_from_row(recipe_row)
+        recipe = Recipe.get_recipe_dataframe_from_row(recipe_row.iloc[0])
         recommendation = recommender_manager.recommend(recipe, request.top_n, request.strategy)
         return recommendation
     except HTTPException as e:

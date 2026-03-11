@@ -25,8 +25,15 @@ uvicorn main:app --reload
 - Handle edge cases (empty recommendations, missing data, unpopular recipes)
 - All recommenders tested and verified working
 
-## Components:
+## Components
 - Content: R²=0.488 (TF-IDF cosine similarity)
 - Collaborative: User co-occurrence with Jaccard/confidence scoring
 - Hybrid: Normalized score combination with graceful degradation
 - Recipe Matcher: Ingredient-based TF-IDF matching
+
+## Endpoints
+- POST /api/recipes/search                    - Search by ingredients 
+- GET  /api/recipes/{id}                      - Get single recipe details 
+- GET  /api/recipes/{id}/recommendations      - Get similar recipes 
+- POST /api/recipes/{id}/simplify             - Simplify recipe steps 
+- GET  /api/health                            - Health check

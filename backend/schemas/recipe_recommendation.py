@@ -2,7 +2,7 @@ from typing import Optional
 
 from pydantic import BaseModel
 
-from models.schemas.recipe import Recipe
+from schemas.recipe import Recipe
 
 
 class RecipeRecommendation(BaseModel):

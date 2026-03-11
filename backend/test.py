@@ -2,7 +2,7 @@
 Test all recommenders before deployment
 """
 from models.recommender_manager import get_recommender_manager
-from models.schemas.recipe import Recipe
+from schemas.recipe import Recipe
 
 print("=" * 80)
 print("🧪 TESTING ALL RECOMMENDERS")

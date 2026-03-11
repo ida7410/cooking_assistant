@@ -1,8 +1,8 @@
 from collections import defaultdict
 
-from models.schemas.recipe import Recipe
-from models.schemas.recipe_recommendation import RecipeRecommendation
-from models.schemas.recommendation_response import RecommendationResponse
+from schemas.recipe import Recipe
+from schemas.recipe_recommendation import RecipeRecommendation
+from schemas.recommendation_response import RecommendationResponse
 
 
 class CollaborativeRecommender:
@@ -39,7 +39,7 @@ class CollaborativeRecommender:
                 top_n=top_n,
                 strategy='collaborative',
                 recommendations=[],
-                error_message=f"{target_recipe['name']} is not found in the recipe_user"
+                error_message=f"{target_recipe.name} is not found in the recipe_user"
             )
             return response
 
@@ -52,7 +52,7 @@ class CollaborativeRecommender:
                 top_n=top_n,
                 strategy='collaborative',
                 recommendations=[],
-                error_message=f"{target_recipe['name']} has too few ratings ({len(users_liked_target)})"
+                error_message=f"{target_recipe.name} has too few ratings ({len(users_liked_target)})"
             )
             return response
 

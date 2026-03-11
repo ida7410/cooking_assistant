@@ -3,6 +3,8 @@ import pandas as pd
 from models.content_recommender import ContentRecommender
 from models.collaborative_recommender import CollaborativeRecommender
 from models.hybrid_recommender import HybridRecommender
+from schemas import Recipe
+
 
 class RecommenderManager:
 
@@ -54,6 +56,17 @@ class RecommenderManager:
             self.hybrid_recommender = HybridRecommender(content_recommender, collab_recommender)
         print("Hybrid recommender Loaded")
         return self.hybrid_recommender
+
+
+    def recommend(self, recipe:Recipe, top_n: int, strategy: str):
+        if strategy == 'content':
+            return self.get_content_recommender().find_similar(recipe, top_n)
+        elif strategy == 'collaborative':
+            return self.get_collab_recommender().find_similar(recipe, top_n)
+        elif strategy == 'hybrid':
+            return self.get_hybrid_recommender().find_similar(recipe, top_n)
+        else:
+            raise ValueError(f"Unknown strategy: {strategy}. Must be 'content', 'collaborative', or 'hybrid'")
 
 
 _manager = RecommenderManager()

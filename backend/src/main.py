@@ -9,6 +9,7 @@ from models.recipe_matcher import RecipeMatcher
 from models.recipe_simplifier import RecipeSimplifier
 from models.recommender_manager import get_recommender_manager
 from schemas import Recipe, RecipeSearchRequest, SimplifyRequest
+from schemas.recipe_response import RecipeResponse
 from schemas.recommendation_request import RecommendationRequest
 
 app = FastAPI(
@@ -79,7 +80,7 @@ async def health():
     }
 
 
-@app.get("/api/recipe/{recipe_id}")
+@app.get("/api/recipe/{recipe_id}", response_model=RecipeResponse)
 async def get_recipe(recipe_id: int):
     try:
         recipe_df = recommender_manager.recipes

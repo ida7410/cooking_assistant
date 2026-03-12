@@ -5,10 +5,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 import config
 from src.dependencies import model_state
-from models.cooking_time_predictor import CookingTimePredictor
-from models.recipe_matcher import RecipeMatcher
-from models.recipe_simplifier import RecipeSimplifier
-from models.recommender_manager import get_recommender_manager
+from src.logger import setup_logging, get_logger
 from src.routers import recipe
 
 app = FastAPI(
@@ -28,8 +25,12 @@ app.add_middleware(
 
 app.include_router(recipe.router)
 
+setup_logging()
+logger = get_logger(__name__)
+
 @app.on_event("startup")
 async def startup():
+    logger.debug("Startup...")
     # load model
     model_state.initialize()
 

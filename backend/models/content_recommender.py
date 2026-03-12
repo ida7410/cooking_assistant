@@ -8,6 +8,9 @@ from sklearn.metrics.pairwise import cosine_similarity
 from schemas.recipe import Recipe
 from schemas.recipe_recommendation import RecipeRecommendation
 from schemas.recommendation_response import RecommendationResponse
+from src.logger import get_logger
+
+logger = get_logger(__name__)
 
 
 class ContentRecommender:
@@ -29,7 +32,7 @@ class ContentRecommender:
 
     def _prepare_features(self):
         # Ingredient Vectors
-        print("Preparing ingredient vectors...")
+        logger.info("Preparing ingredient vectors...")
 
         # convert ingredient list to text
         self.recipes['ingredients_text'] = self.recipes['ingredients'].apply(
@@ -39,11 +42,11 @@ class ContentRecommender:
         # create TF-ID vector for ingredients
         self.ingredient_vectorizer = TfidfVectorizer(max_features=5000)
         self.ingredient_vector = self.ingredient_vectorizer.fit_transform(self.recipes['ingredients'])
-        print("Ingredient vectors prepared")
+        logger.info("Ingredient vectors prepared")
 
 
         # Tag Vectors
-        print("Preparing tag vectors...")
+        logger.info("Preparing tag vectors...")
 
         # convert ingredient list to text
         self.recipes['tags_text'] = self.recipes['tags'].apply(
@@ -53,7 +56,7 @@ class ContentRecommender:
         # create TF-ID vector for ingredients
         self.tag_vectorizer = TfidfVectorizer(max_features=5000)
         self.tag_vector = self.ingredient_vectorizer.fit_transform(self.recipes['tags'])
-        print("Tag vectors prepared")
+        logger.info("Tag vectors prepared")
 
 
     def _calculate_time_similarity(self, time1, time2):

@@ -3,6 +3,9 @@ from collections import defaultdict
 from schemas.recipe import Recipe
 from schemas.recipe_recommendation import RecipeRecommendation
 from schemas.recommendation_response import RecommendationResponse
+from src.logger import get_logger
+
+logger = get_logger(__name__)
 
 
 class CollaborativeRecommender:
@@ -27,7 +30,7 @@ class CollaborativeRecommender:
 
             self.recipe_user[recipe_id].add(user_id)
 
-        print(f"Built a map of {len(self.recipe_user):,} recipes")
+        logger.debug(f"Built a map of {len(self.recipe_user):,} recipes")
 
 
     def find_similar(self, target_recipe:Recipe, top_n=10):

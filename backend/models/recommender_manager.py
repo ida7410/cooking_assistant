@@ -4,6 +4,9 @@ from models.content_recommender import ContentRecommender
 from models.collaborative_recommender import CollaborativeRecommender
 from models.hybrid_recommender import HybridRecommender
 from schemas import Recipe
+from src.logger import get_logger
+
+logger = get_logger(__name__)
 
 
 class RecommenderManager:
@@ -19,42 +22,42 @@ class RecommenderManager:
 
     def __init__(self):
         if not RecommenderManager._initialized:
-            print("Initializing recommender manager...")
+            logger.info("Initializing recommender manager...")
             self.content_recommender = None
             self.collab_recommender = None
             self.hybrid_recommender = None
 
-            print("Loading recipes & interactions...")
+            logger.info("Loading recipes & interactions...")
             self.recipes = pd.read_csv('data/RAW_recipes.csv')
             self.interactions = pd.read_csv('data/RAW_interactions.csv')
-            print("Data loaded")
+            logger.info("Data loaded")
 
             RecommenderManager._initialized = True
 
 
     def get_content_recommender(self):
-        print("Loading content recommender...")
+        logger.info("Loading content recommender...")
         if self.content_recommender is None:
             self.content_recommender = ContentRecommender(self.recipes)
-        print("Content recommender Loaded")
+        logger.info("Content recommender Loaded")
         return self.content_recommender
 
 
     def get_collab_recommender(self):
-        print("Loading collab recommender...")
+        logger.info("Loading collab recommender...")
         if self.collab_recommender is None:
             self.collab_recommender = CollaborativeRecommender(self.recipes, self.interactions)
-        print("Collab recommender Loaded")
+        logger.info("Collab recommender Loaded")
         return self.collab_recommender
 
 
     def get_hybrid_recommender(self):
-        print("Loading hybrid recommender...")
+        logger.info("Loading hybrid recommender...")
         if self.hybrid_recommender is None:
             content_recommender = self.get_content_recommender()
             collab_recommender = self.get_collab_recommender()
             self.hybrid_recommender = HybridRecommender(content_recommender, collab_recommender)
-        print("Hybrid recommender Loaded")
+        logger.info("Hybrid recommender Loaded")
         return self.hybrid_recommender
 
 

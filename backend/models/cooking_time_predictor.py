@@ -53,7 +53,7 @@ class CookingTimePredictor:
     def _load_model(self):
         with open(self.model_path, 'rb') as f:
             self.model = pickle.load(f)
-        print("Loaded model")
+        print("Loaded model_state")
         print(f"{self.model}")
 
 
@@ -81,7 +81,7 @@ class CookingTimePredictor:
         # divide train & test
         X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
 
-        # train model
+        # train model_state
         self.model = RandomForestRegressor(
             n_estimators=100,
             max_depth=15,

@@ -1,14 +1,17 @@
-import os
-
 from anthropic import Anthropic
 from dotenv import load_dotenv
 
+from config import ANTHROPIC_API_KEY
+from src.logger import get_logger
+
 load_dotenv(dotenv_path='.env')
+
+logger = get_logger(__name__)
 
 
 class RecipeSimplifier:
     def __init__(self):
-        self.client = Anthropic(api_key=os.getenv("ANTHROPIC_API_KEY"))
+        self.client = Anthropic(api_key=ANTHROPIC_API_KEY)
         self.model = "claude-sonnet-4-20250514"
 
 
@@ -61,5 +64,5 @@ Now write the simplified beginner-friendly version. Use numbered steps:"""
             simplified = message.content[0].text.strip()
             return simplified
         except Exception as e:
-            print(f"Exception while simplifying recipe: {e}")
-            print(steps_text)
+            logger.error(f"Exception while simplifying recipe: {e}")
+            logger.debug(steps_text)

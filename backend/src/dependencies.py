@@ -4,6 +4,9 @@ from fastapi import HTTPException
 
 from models import RecipeSimplifier, RecipeMatcher, CookingTimePredictor
 from models.recommender_manager import RecommenderManager, get_recommender_manager
+from src.logger import get_logger
+
+logger = get_logger(__name__)
 
 
 class ModelState:
@@ -14,15 +17,15 @@ class ModelState:
         self.time_predictor: Optional[CookingTimePredictor] = None
 
     def initialize(self):
-        print("Loading models...")
+        logger.info("Loading models...")
         self.recommender_manager = get_recommender_manager()
-        print("Recommender manager loaded")
+        logger.info("Recommender manager loaded")
         self.recipe_matcher = RecipeMatcher()
-        print("Recipe matcher loaded")
+        logger.info("Recipe matcher loaded")
         self.time_predictor = CookingTimePredictor()
-        print("Time predictor loaded")
+        logger.info("Time predictor loaded")
         self.recipe_simplifier = RecipeSimplifier()
-        print("Recipe simplifier loaded\n")
+        logger.info("Recipe simplifier loaded\n")
 
     def is_ready(self):
         return all([

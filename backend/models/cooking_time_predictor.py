@@ -7,6 +7,10 @@ from sklearn.ensemble import RandomForestRegressor
 from sklearn.model_selection import train_test_split
 from pathlib import Path
 
+from src.logger import get_logger
+
+logger = get_logger(__name__)
+
 
 class CookingTimePredictor:
     def __init__(self, data_path='data/RAW_recipes.csv', model_path='models/saved/time_predictor.pkl'):
@@ -53,8 +57,8 @@ class CookingTimePredictor:
     def _load_model(self):
         with open(self.model_path, 'rb') as f:
             self.model = pickle.load(f)
-        print("Loaded model_state")
-        print(f"{self.model}")
+        logger.info("Loaded model_state")
+        logger.debug(f"{self.model}")
 
 
     def _train_model(self):
@@ -96,14 +100,14 @@ class CookingTimePredictor:
         mae = mean_absolute_error(y_test, y_pred)
         r2 = r2_score(y_test, y_pred)
 
-        # print result
-        print(f"MAE: {mae:.1f} minutes")
-        print(f"R2 : {r2:.3f}")
+        # logger.info result
+        logger.info(f"MAE: {mae:.1f} minutes")
+        logger.info(f"R2 : {r2:.3f}")
 
         self.model_path.parent.mkdir(parents=True, exist_ok=True)
         with open(self.model_path, 'wb') as f:
             pickle.dump(self.model, f)
-        print(f"Model saved to {self.model_path}")
+        logger.debug(f"Model saved to {self.model_path}")
 
     # extract times
     def _extract_time(self, text):

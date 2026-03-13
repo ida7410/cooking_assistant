@@ -5,20 +5,40 @@ from sklearn.metrics.pairwise import cosine_similarity
 from schemas.recipe import Recipe
 from schemas.recipe_recommendation import RecipeRecommendation
 from schemas.recommendation_response import RecommendationResponse
+from src.logger import get_logger
+
+logger = get_logger(__name__)
 
 
 class RecipeMatcher:
-    def __init__(self, data_path='data/RAW_recipes.csv'):
+    def __init__(self):
         # load recipes
-        self.recipes = pd.read_csv(data_path)
+        self.recipes = None
+        self.vectorizer = None
+        self.recipe_vectors = None
 
-        # create ingredient vectors
-        self.vectorizer = TfidfVectorizer()
-        self.recipe_vectors = self.vectorizer.fit_transform(
-            self.recipes['ingredients'].astype(str)
-        )
+
+    def _load_data(self):
+        if self.recipes is None:
+            import os
+            if os.path.exists('/data/RAW_recipes.csv'):
+                logger.info("Loading recipes & interactions...")
+                self.recipes = pd.read_csv('/data/RAW_recipes.csv')
+                logger.info("Data loaded successfully")
+
+                # create ingredient vectors
+                self.vectorizer = TfidfVectorizer()
+                self.recipe_vectors = self.vectorizer.fit_transform(
+                    self.recipes['ingredients'].astype(str)
+                )
+                logger.info("Vectorization for ingredients completed")
+            else:
+                raise FileNotFoundError(
+                    "Data files not found. Please upload RAW_recipes.csv via /upload-file endpoint"
+                )
 
     def find_matches(self, user_ingredients, top_n=5):
+        self._load_data()
         # convert user ingredients to vector
         user_text = ' '.join(user_ingredients)
         user_vector = self.vectorizer.transform([user_text])

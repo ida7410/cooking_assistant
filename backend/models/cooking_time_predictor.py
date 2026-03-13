@@ -167,6 +167,7 @@ class CookingTimePredictor:
 
     # predict
     def predict(self, recipe_row, skill_level='intermediate'):
+        self._ensure_model_loaded()
         # extract feature
         features = self._extract_features(recipe_row)
 

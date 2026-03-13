@@ -13,7 +13,7 @@ logger = get_logger(__name__)
 
 
 class CookingTimePredictor:
-    def __init__(self, model_path='/models/saved/time_predictor.pkl'):
+    def __init__(self, model_path='/data/time_predictor.pkl'):
         self.model_path = Path(model_path)
         self.model = None
         self.feature_cols = [

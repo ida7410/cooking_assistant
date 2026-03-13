@@ -1,12 +1,10 @@
-import shutil
 from datetime import datetime
 
-from fastapi import FastAPI, UploadFile, File, Depends
+from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 import config
-from models import CookingTimePredictor
-from src.dependencies import model_state, get_time_predictor
+from src.dependencies import model_state
 from src.logger import setup_logging, get_logger
 from src.routers import recipe
 
@@ -32,9 +30,15 @@ logger = get_logger(__name__)
 
 @app.on_event("startup")
 async def startup():
-    logger.debug("Startup...")
+    logger.info("Startup...")
+
     # load model
     model_state.initialize()
+
+    # preload data
+    model_state.preload_data()
+
+    logger.info("Startup completed")
 
 @app.get("/")
 async def root():
@@ -66,31 +70,4 @@ async def health():
             "recipe_simplifier": "ready" if model_state.recipe_simplifier else "not loaded",
             "recommender_manager": "ready" if model_state.recommender_manager else "not loaded",
         }
-    }
-
-
-@app.post("/upload-file")
-async def upload_file(file: UploadFile = File(...)):
-    """Temporary endpoint to upload CSV files to Railway volume"""
-    file_path = f"/data/{file.filename}"
-
-    with open(file_path, "wb") as buffer:
-        shutil.copyfileobj(file.file, buffer)
-
-    return {
-        "filename": file.filename,
-        "location": file_path,
-        "message": "File uploaded successfully"
-    }
-
-
-@app.get("/debug-model")
-async def debug_model(time_predictor: CookingTimePredictor = Depends(get_time_predictor)):
-    import os
-    return {
-        "model_loaded": time_predictor.model is not None,
-        "model_path_exists": time_predictor.model_path.exists(),
-        "model_path": str(time_predictor.model_path),
-        "data_file_exists": os.path.exists("/data/RAW_recipes.csv"),
-        "data_files": os.listdir("/data") if os.path.exists("/data") else []
     }

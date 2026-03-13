@@ -27,6 +27,26 @@ class ModelState:
         self.recipe_simplifier = RecipeSimplifier()
         logger.info("Recipe simplifier loaded\n")
 
+
+    def preload_data(self):
+        logger.info("Preloading data...")
+
+        try:
+            if self.recommender_manager:
+                self.recommender_manager._load_data()
+                logger.info("Recommender data preloaded")
+            if self.recipe_matcher:
+                self.recipe_matcher._load_data()
+                logger.info("Recipe matcher preloaded")
+            if self.time_predictor:
+                self.time_predictor._ensure_model_loaded()
+                logger.info("Time predictor data preloaded")
+
+            logger.info("All data successfully loaded")
+        except Exception as e:
+            logger.error(f"Error while preloading data {e}")
+
+
     def is_ready(self):
         return all([
             self.recommender_manager is not None,

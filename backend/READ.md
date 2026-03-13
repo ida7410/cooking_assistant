@@ -9,13 +9,10 @@
 - [Overview](#overview)
 - [Tech Stack](#tech-stack)
 - [Project Structure](#project-structure)
-- [Installation](#installation)
-- [Configuration](#configuration)
 - [API Endpoints](#api-endpoints)
 - [ML Models](#ml-models)
 - [Development](#development)
 - [Testing](#testing)
-- [Deployment](#deployment)
 
 ---
 
@@ -38,7 +35,7 @@ The backend is a FastAPI application serving ML-powered recipe recommendations t
 
 | Category | Technologies |
 |----------|-------------|
-| **Framework** | FastAPI 0.104+ |
+| **Framework** | FastAPI 0.110+ |
 | **ML/Data** | scikit-learn, pandas, numpy |
 | **NLP** | TF-IDF Vectorization |
 | **AI** | Anthropic Claude API |
@@ -81,10 +78,6 @@ backend/
 │   ├── recommendation_request.py
 │   └── simplify_request.py
 │
-├── data/                         # Dataset files
-│   ├── RAW_recipes.csv          # 231k recipes
-│   └── RAW_interactions.csv     # 1.1M ratings
-│
 ├── config.py                     # Configuration
 ├── requirements.txt              # Python dependencies
 ├── .env.example                  # Environment template
@@ -93,86 +86,11 @@ backend/
 
 ---
 
-## 🚀 Installation
-
-### **Prerequisites**
-
-- Python 3.10 or higher
-- pip or conda
-- Virtual environment (recommended)
-
-### **Setup Steps**
-
-```bash
-# 1. Navigate to backend directory
-cd backend
-
-# 2. Create virtual environment
-python -m venv venv
-
-# 3. Activate virtual environment
-# On Windows:
-venv\Scripts\activate
-# On macOS/Linux:
-source venv/bin/activate
-
-# 4. Install dependencies
-pip install -r requirements.txt
-
-# 5. Setup environment variables
-cp .env.example .env
-# Edit .env and add your ANTHROPIC_API_KEY
-
-# 6. Run the server
-uvicorn src.main:app --reload --host 0.0.0.0 --port 8000
-```
-
-### **Verify Installation**
-
-```bash
-# Test health endpoint
-curl http://localhost:8000/health
-
-# Open interactive docs
-open http://localhost:8000/docs
-```
-
----
-
-## ⚙️ Configuration
-
-### **Environment Variables** (`.env`)
-
-```bash
-# Environment
-ENVIRONMENT=development          # development | production
-
-# API Keys
-ANTHROPIC_API_KEY=sk-ant-xxxxx  # Required for recipe simplification
-
-# Logging
-LOG_LEVEL=DEBUG                  # DEBUG | INFO | WARNING | ERROR
-
-# CORS (for frontend)
-CORS_ORIGINS=http://localhost:3000
-```
-
-### **Config File** (`config.py`)
-
-Key configurations:
-- `API_TITLE`, `API_VERSION` - API metadata
-- `CORS_ORIGINS` - Allowed frontend origins
-- `LOG_LEVEL` - Logging verbosity
-- `DATA_DIR`, `MODELS_DIR` - File paths
-- `TFIDF_MAX_FEATURES` - NLP feature limit (5000)
-
----
-
 ## 📡 API Endpoints
 
 ### **Base URL**
 - Development: `http://localhost:8000`
-- Production: `https://your-backend.railway.app`
+- Production: `https://cookingassistant-production.up.railway.app`
 
 ### **Interactive Documentation**
 - Swagger UI: `http://localhost:8000/docs`
@@ -373,25 +291,6 @@ uvicorn src.main:app --reload --host 0.0.0.0 --port 8000
 LOG_LEVEL=DEBUG uvicorn src.main:app --reload
 ```
 
-### **Logging**
-
-```python
-from src.logger import get_logger
-
-logger = get_logger(__name__)
-
-logger.debug("Detailed debug info")
-logger.info("Important event")
-logger.warning("Warning message")
-logger.error("Error occurred")
-```
-
-**Log Levels:**
-- `DEBUG` - Detailed info (development)
-- `INFO` - General events (production)
-- `WARNING` - Potential issues
-- `ERROR` - Failures
-
 ### **Adding New Endpoints**
 
 1. Create route in `src/routers/recipe.py`
@@ -417,44 +316,6 @@ class ModelState:
 
 ---
 
-## 🚀 Deployment
-
-### **Railway Deployment**
-
-1. **Create Railway Project**
-   ```bash
-   railway login
-   railway init
-   ```
-
-2. **Set Environment Variables**
-   ```bash
-   railway variables set ENVIRONMENT=production
-   railway variables set ANTHROPIC_API_KEY=your_key
-   railway variables set LOG_LEVEL=INFO
-   ```
-
-3. **Deploy**
-   ```bash
-   railway up
-   ```
-
-4. **Configure Domain**
-   - Railway generates URL: `your-app.railway.app`
-   - Update frontend `NEXT_PUBLIC_API_URL`
-
-### **Production Checklist**
-
-- ✅ Set `ENVIRONMENT=production`
-- ✅ Set `LOG_LEVEL=INFO`
-- ✅ Configure CORS origins
-- ✅ Add Anthropic API key
-- ✅ Upload dataset files
-- ✅ Test all endpoints
-- ✅ Monitor logs
-
----
-
 ## 📊 Performance Optimization
 
 ### **Current Optimizations**
@@ -470,38 +331,6 @@ class ModelState:
 - [ ] Model quantization for faster inference
 - [ ] Batch prediction for time predictor
 - [ ] Database for user interactions (Phase 2)
-
----
-
-## 🐛 Troubleshooting
-
-### **Models not loading**
-```bash
-# Check file paths
-ls data/RAW_recipes.csv
-ls data/RAW_interactions.csv
-
-# Check logs
-LOG_LEVEL=DEBUG uvicorn src.main:app --reload
-```
-
-### **Import errors**
-```bash
-# Ensure you're in backend/ directory
-cd backend
-
-# Reinstall dependencies
-pip install -r requirements.txt
-```
-
-### **Anthropic API errors**
-```bash
-# Verify API key is set
-echo $ANTHROPIC_API_KEY
-
-# Check .env file
-cat .env
-```
 
 ---
 

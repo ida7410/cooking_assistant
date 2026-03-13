@@ -30,9 +30,15 @@ logger = get_logger(__name__)
 
 @app.on_event("startup")
 async def startup():
-    logger.debug("Startup...")
+    logger.info("Startup...")
+
     # load model
     model_state.initialize()
+
+    # preload data
+    model_state.preload_data()
+
+    logger.info("Startup completed")
 
 @app.get("/")
 async def root():

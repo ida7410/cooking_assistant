@@ -21,6 +21,8 @@ async def get_recipe(
         time_predictor: CookingTimePredictor = Depends(get_time_predictor)
 ):
     try:
+        recommender_manager._load_data()
+        
         recipe_df = recommender_manager.recipes
         recipe_row = recipe_df[recipe_df['id'] == recipe_id]
         if recipe_row.empty:

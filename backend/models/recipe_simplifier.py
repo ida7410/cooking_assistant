@@ -4,8 +4,6 @@ from dotenv import load_dotenv
 from config import ANTHROPIC_API_KEY
 from src.logger import get_logger
 
-load_dotenv(dotenv_path='.env')
-
 logger = get_logger(__name__)
 
 

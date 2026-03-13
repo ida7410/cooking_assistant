@@ -13,8 +13,7 @@ logger = get_logger(__name__)
 
 
 class CookingTimePredictor:
-    def __init__(self, data_path='data/RAW_recipes.csv', model_path='models/saved/time_predictor.pkl'):
-        self.data_path = data_path
+    def __init__(self, model_path='/data/time_predictor.pkl'):
         self.model_path = Path(model_path)
         self.model = None
         self.feature_cols = [
@@ -48,10 +47,13 @@ class CookingTimePredictor:
             'set': 60,            # 1 hour average
         }
 
-        if self.model_path.exists():
-            self._load_model()
-        else:
-            self._train_model()
+
+    def _ensure_model_loaded(self):
+        if self.model is None:
+            if self.model_path.exists():
+                self._load_model()
+            else:
+                self._train_model()
 
 
     def _load_model(self):
@@ -62,8 +64,14 @@ class CookingTimePredictor:
 
 
     def _train_model(self):
+        import os
+        if not os.path.exists("/data/RAW_recipes.csv"):
+            raise FileNotFoundError(
+                f"Recipe data not found. Please upload RAW_recipes.csv via /upload-file endpoint"
+            )
+
         # exclude outlier datas
-        df = pd.read_csv(self.data_path)
+        df = pd.read_csv("/data/RAW_recipes.csv")
         df_clean = df[df['minutes'] <= 180]
 
         # extract features in steps
@@ -159,6 +167,7 @@ class CookingTimePredictor:
 
     # predict
     def predict(self, recipe_row, skill_level='intermediate'):
+        self._ensure_model_loaded()
         # extract feature
         features = self._extract_features(recipe_row)
 

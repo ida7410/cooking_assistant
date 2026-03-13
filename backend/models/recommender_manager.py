@@ -37,8 +37,8 @@ class RecommenderManager:
             import os
             if os.path.exists('/data/RAW_recipes.csv'):
                 logger.info("Loading recipes & interactions...")
-                self.recipes = pd.read_csv('data/RAW_recipes.csv')
-                self.interactions = pd.read_csv('data/RAW_interactions.csv')
+                self.recipes = pd.read_csv('/data/RAW_recipes.csv')
+                self.interactions = pd.read_csv('/data/RAW_interactions.csv')
                 logger.info("Data loaded")
             else:
                 raise FileNotFoundError(

@@ -27,16 +27,28 @@ class RecommenderManager:
             self.collab_recommender = None
             self.hybrid_recommender = None
 
-            logger.info("Loading recipes & interactions...")
-            self.recipes = pd.read_csv('data/RAW_recipes.csv')
-            self.interactions = pd.read_csv('data/RAW_interactions.csv')
-            logger.info("Data loaded")
-
+            self.recipes = None
+            self.interactions = None
             RecommenderManager._initialized = True
+
+
+    def _load_data(self):
+        if self.recipes is None:
+            import os
+            if os.path.exists('/data/RAW_recipes.csv'):
+                logger.info("Loading recipes & interactions...")
+                self.recipes = pd.read_csv('data/RAW_recipes.csv')
+                self.interactions = pd.read_csv('data/RAW_interactions.csv')
+                logger.info("Data loaded")
+            else:
+                raise FileNotFoundError(
+                    "Data files not found. Please upload RAW_recipes.csv and RAW_interactions.csv via /upload-file endpoint"
+                )
 
 
     def get_content_recommender(self):
         logger.info("Loading content recommender...")
+        self._load_data()
         if self.content_recommender is None:
             self.content_recommender = ContentRecommender(self.recipes)
         logger.info("Content recommender Loaded")
@@ -45,6 +57,7 @@ class RecommenderManager:
 
     def get_collab_recommender(self):
         logger.info("Loading collab recommender...")
+        self._load_data()
         if self.collab_recommender is None:
             self.collab_recommender = CollaborativeRecommender(self.recipes, self.interactions)
         logger.info("Collab recommender Loaded")

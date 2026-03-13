@@ -1,6 +1,7 @@
+import shutil
 from datetime import datetime
 
-from fastapi import FastAPI
+from fastapi import FastAPI, UploadFile, File
 from fastapi.middleware.cors import CORSMiddleware
 
 import config
@@ -64,4 +65,19 @@ async def health():
             "recipe_simplifier": "ready" if model_state.recipe_simplifier else "not loaded",
             "recommender_manager": "ready" if model_state.recommender_manager else "not loaded",
         }
+    }
+
+
+@app.post("/upload-file")
+async def upload_file(file: UploadFile = File(...)):
+    """Temporary endpoint to upload CSV files to Railway volume"""
+    file_path = f"/data/{file.filename}"
+
+    with open(file_path, "wb") as buffer:
+        shutil.copyfileobj(file.file, buffer)
+
+    return {
+        "filename": file.filename,
+        "location": file_path,
+        "message": "File uploaded successfully"
     }
